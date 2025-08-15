@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// 🔧 Іконка маркера (Leaflet fix)
+// 🔧 Виправлення іконки маркера Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -18,12 +18,22 @@ interface LocationData {
     timestamp: string;
 }
 
+// 🗺 Хук для плавного центровання карти
+const RecenterMap: React.FC<{ lat: number; lng: number }> = ({ lat, lng }) => {
+    const map = useMap();
+    useEffect(() => {
+        map.setView([lat, lng], map.getZoom());
+    }, [lat, lng]);
+    return null;
+};
+
 const MapView: React.FC = () => {
     const [position, setPosition] = useState<[number, number] | null>(null);
     const [accuracy, setAccuracy] = useState<number | null>(null);
     const [address, setAddress] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [history, setHistory] = useState<LocationData[]>([]);
+    const [loadingAddress, setLoadingAddress] = useState(false);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -42,7 +52,7 @@ const MapView: React.FC = () => {
     };
 
     // 📍 Отримати геолокацію
-    const updateLocation = () => {
+    const updateLocation = useCallback(() => {
         if (!navigator.geolocation) {
             setError('Ваш браузер не підтримує геолокацію');
             return;
@@ -56,9 +66,11 @@ const MapView: React.FC = () => {
                 setPosition(coords);
                 setAccuracy(accuracy);
                 setError(null);
+                setLoadingAddress(true);
 
                 const addr = await reverseGeocode(latitude, longitude);
                 setAddress(addr);
+                setLoadingAddress(false);
 
                 const timestamp = new Date().toLocaleTimeString();
 
@@ -69,7 +81,7 @@ const MapView: React.FC = () => {
                     timestamp,
                 };
 
-                setHistory((prev) => [newEntry, ...prev.slice(0, 9)]); // зберігати лише 10 останніх
+                setHistory((prev) => [newEntry, ...prev.slice(0, 9)]); // Зберігати лише 10 останніх
             },
             (err) => {
                 setError('Не вдалося отримати локацію: ' + err.message);
@@ -77,25 +89,23 @@ const MapView: React.FC = () => {
             {
                 enableHighAccuracy: true,
                 timeout: 10000,
-                maximumAge: 0,
+                maximumAge: 5000,
             }
         );
-    };
+    }, []);
 
-    // 🔁 Автооновлення кожні 10 сек
+    // 🔁 Автооновлення кожні 10 секунд
     useEffect(() => {
         updateLocation(); // Перше оновлення
 
-        // intervalRef.current = setInterval(() => {
-        //     updateLocation();
-        // }, 10000);
+        intervalRef.current = setInterval(() => {
+            updateLocation();
+        }, 10000);
 
-        // return () => {
-        //     if (intervalRef.current) {
-        //         clearInterval(intervalRef.current);
-        //     }
-        // };
-    }, []);
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, [updateLocation]);
 
     return (
         <div style={{ marginTop: '20px' }}>
@@ -118,28 +128,27 @@ const MapView: React.FC = () => {
                             <Popup>
                                 Ви тут 📍<br />
                                 Точність: {accuracy?.toFixed(0)} м<br />
-                                {address && (
-                                    <>
-                                        <strong>Адреса:</strong><br />
-                                        {address}
-                                    </>
+                                {loadingAddress ? (
+                                    <em>Завантаження адреси...</em>
+                                ) : (
+                                    address && (
+                                        <>
+                                            <strong>Адреса:</strong><br />
+                                            {address}
+                                        </>
+                                    )
                                 )}
                             </Popup>
                         </Marker>
-                        {accuracy && (
-                            <Circle
-                                center={position}
-                                radius={accuracy}
-                                pathOptions={{ color: 'blue', fillOpacity: 0.2 }}
-                            />
-                        )}
+                        {accuracy && <Circle center={position} radius={accuracy} pathOptions={{ color: 'blue', fillOpacity: 0.2 }} />}
+                        <RecenterMap lat={position[0]} lng={position[1]} />
                     </MapContainer>
                 ) : (
                     <p>Завантаження мапи...</p>
                 )}
             </div>
 
-            {/* <h3>📍 Історія останніх локацій:</h3>
+            <h3>📍 Історія останніх локацій:</h3>
             {history.length > 0 ? (
                 <ul style={{ paddingLeft: '20px' }}>
                     {history.map((item, index) => (
@@ -152,7 +161,7 @@ const MapView: React.FC = () => {
                 </ul>
             ) : (
                 <p>Ще немає збережених точок.</p>
-            )} */}
+            )}
         </div>
     );
 };
