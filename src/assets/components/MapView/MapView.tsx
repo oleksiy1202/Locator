@@ -98,9 +98,9 @@ const MapView: React.FC = () => {
     useEffect(() => {
         updateLocation(); // Перше оновлення
 
-        intervalRef.current = setInterval(() => {
-            updateLocation();
-        }, 10000);
+        // intervalRef.current = setInterval(() => {
+        //     updateLocation();
+        // }, 10000);
 
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -109,11 +109,13 @@ const MapView: React.FC = () => {
 
     return (
         <div style={{ marginTop: '20px' }}>
-            <h2>Карта місцезнаходження</h2>
+            <div style={{ textAlign: 'center' }}>
+                <h2>Карта місцезнаходження</h2>
 
-            <button onClick={updateLocation} style={{ marginBottom: '10px' }}>
-                🔄 Оновити локацію вручну
-            </button>
+                <button onClick={updateLocation} style={{ marginBottom: '10px' }}>
+                    🔄 Оновити локацію вручну
+                </button>
+            </div>
 
             {error && <p style={{ color: 'red' }}>{error}</p>}
 

@@ -1,5 +1,5 @@
 import './App.css';
-import Location from './assets/components/Location/Location';
+// import Location from './assets/components/Location/Location';
 import MapView from './assets/components/MapView/MapView';
 import SystemInfo from './assets/components/SystemInfo/SystemInfo';
 import { motion } from 'framer-motion';
@@ -35,7 +35,7 @@ function App() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.6 }}
       >
-        {/* <MapView /> */}
+        <MapView />
       </motion.div>
     </div>
   );
