@@ -27,7 +27,7 @@ function App() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.4, duration: 0.6 }}
       >
-        <Location />
+        {/* <Location /> */}
       </motion.div>
 
       <motion.div
@@ -35,7 +35,7 @@ function App() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.6 }}
       >
-        <MapView />
+        {/* <MapView /> */}
       </motion.div>
     </div>
   );
