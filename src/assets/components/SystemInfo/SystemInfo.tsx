@@ -21,44 +21,32 @@ const SystemInfo: React.FC = () => {
     useEffect(() => {
         const ua = navigator.userAgent;
 
-        // Визначення пристрою
         if (/Mobi|Android/i.test(ua)) setDeviceType('мобільний');
         else if (/Tablet|iPad/i.test(ua)) setDeviceType('планшет');
         else setDeviceType('ПК');
 
-        // Визначення ОС
         if (ua.includes('Windows')) setOS('Windows');
         else if (ua.includes('Mac')) setOS('macOS');
         else if (ua.includes('Android')) setOS('Android');
         else if (ua.includes('iPhone') || ua.includes('iPad')) setOS('iOS');
 
-        // Браузер
         if (ua.includes('Chrome')) setBrowser('Chrome');
         else if (ua.includes('Firefox')) setBrowser('Firefox');
         else if (ua.includes('Safari') && !ua.includes('Chrome')) setBrowser('Safari');
         else if (ua.includes('Edge')) setBrowser('Edge');
 
-        // Час
         setLocalTime(new Date().toLocaleTimeString());
         setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 
-        // Тип мережі
         const connection = (navigator as any).connection;
-        if (connection?.effectiveType) {
-            setConnectionType(connection.effectiveType);
-        }
+        if (connection?.effectiveType) setConnectionType(connection.effectiveType);
 
-        // Батарея (якщо підтримується)
         if ('getBattery' in navigator) {
-            (navigator as any).getBattery().then((battery: any) => {
-                setBattery({
-                    level: battery.level,
-                    charging: battery.charging,
-                });
+            (navigator as any).getBattery().then((bat: any) => {
+                setBattery({ level: bat.level, charging: bat.charging });
             });
         }
 
-        // Події
         const handleOnline = () => setIsOnline(true);
         const handleOffline = () => setIsOnline(false);
         const handleResize = () => setScreenSize(`${window.innerWidth}x${window.innerHeight}`);
