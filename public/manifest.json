@@ -1,0 +1,42 @@
+{
+  "name": "Location Test - Моя Локація",
+  "short_name": "Локація",
+  "description": "Додаток для відстеження вашого місцезнаходження в реальному часі",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#0077ff",
+  "orientation": "any",
+  "dir": "ltr",
+  "lang": "uk",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["navigation", "utilities"],
+  "prefer_related_applications": false
+}
+

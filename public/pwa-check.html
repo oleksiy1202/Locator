@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWA Діагностика</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .check-item {
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border-left: 4px solid #ddd;
+      background: #f8f9fa;
+      transition: all 0.3s;
+    }
+    .check-item.success {
+      border-left-color: #28a745;
+      background: #d4edda;
+    }
+    .check-item.warning {
+      border-left-color: #ffc107;
+      background: #fff3cd;
+    }
+    .check-item.error {
+      border-left-color: #dc3545;
+      background: #f8d7da;
+    }
+    .check-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .check-detail {
+      font-size: 13px;
+      color: #666;
+      margin-top: 5px;
+    }
+    .icon {
+      font-size: 20px;
+    }
+    .manifest-info {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .manifest-info h3 {
+      margin-bottom: 10px;
+      color: #0066cc;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .refresh-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+      width: 100%;
+      font-weight: 600;
+    }
+    .refresh-btn:hover {
+      background: #5568d3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 PWA Діагностика</h1>
+    <p class="subtitle">Перевірка налаштувань Progressive Web App</p>
+    
+    <div id="checks"></div>
+    
+    <div class="manifest-info" id="manifestInfo"></div>
+    
+    <button class="refresh-btn" onclick="location.reload()">🔄 Оновити перевірку</button>
+  </div>
+
+  <script>
+    const checksContainer = document.getElementById('checks');
+    const manifestInfo = document.getElementById('manifestInfo');
+    
+    function addCheck(title, detail, status) {
+      const div = document.createElement('div');
+      div.className = `check-item ${status}`;
+      const icons = {
+        success: '✅',
+        warning: '⚠️',
+        error: '❌'
+      };
+      div.innerHTML = `
+        <div class="check-title">
+          <span class="icon">${icons[status]}</span>
+          ${title}
+        </div>
+        <div class="check-detail">${detail}</div>
+      `;
+      checksContainer.appendChild(div);
+    }
+
+    async function runChecks() {
+      // 1. Перевірка HTTPS
+      if (location.protocol === 'https:' || location.hostname === 'localhost') {
+        addCheck('HTTPS підключення', 'Сайт використовує безпечне з\'єднання', 'success');
+      } else {
+        addCheck('HTTPS відсутній', 'PWA вимагає HTTPS. На production обов\'язково потрібен HTTPS', 'error');
+      }
+
+      // 2. Перевірка Service Worker
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration) {
+            addCheck('Service Worker', `Зареєстровано: ${registration.scope}`, 'success');
+          } else {
+            addCheck('Service Worker', 'Не знайдено активний Service Worker', 'warning');
+          }
+        } catch (e) {
+          addCheck('Service Worker', `Помилка: ${e.message}`, 'error');
+        }
+      } else {
+        addCheck('Service Worker', 'Браузер не підтримує Service Workers', 'error');
+      }
+
+      // 3. Перевірка Manifest
+      const manifestLink = document.querySelector('link[rel="manifest"]');
+      if (manifestLink) {
+        try {
+          const response = await fetch(manifestLink.href);
+          const manifest = await response.json();
+          addCheck('Web App Manifest', `Знайдено: ${manifest.name || manifest.short_name}`, 'success');
+          
+          // Показати деталі manifest
+          manifestInfo.innerHTML = `
+            <h3>📄 Деталі Manifest</h3>
+            <strong>Назва:</strong> ${manifest.name}<br>
+            <strong>Коротка назва:</strong> ${manifest.short_name}<br>
+            <strong>Start URL:</strong> ${manifest.start_url}<br>
+            <strong>Display:</strong> ${manifest.display}<br>
+            <strong>Орієнтація:</strong> ${manifest.orientation}<br>
+            <strong>Іконки:</strong> ${manifest.icons?.length || 0} шт.<br>
+            <strong>Theme Color:</strong> <span style="display:inline-block;width:20px;height:20px;background:${manifest.theme_color};border:1px solid #ccc;vertical-align:middle;"></span> ${manifest.theme_color}
+          `;
+        } catch (e) {
+          addCheck('Web App Manifest', `Помилка завантаження: ${e.message}`, 'error');
+        }
+      } else {
+        addCheck('Web App Manifest', 'manifest.json не знайдено в HTML', 'error');
+      }
+
+      // 4. Перевірка іконок
+      const manifest = await fetch('/manifest.json').then(r => r.json()).catch(() => ({}));
+      if (manifest.icons && manifest.icons.length > 0) {
+        const hasRequired = manifest.icons.some(icon => 
+          icon.sizes.includes('192') || icon.sizes.includes('512')
+        );
+        if (hasRequired) {
+          addCheck('Іконки PWA', `Знайдено ${manifest.icons.length} іконок (включаючи 192x192 та 512x512)`, 'success');
+        } else {
+          addCheck('Іконки PWA', 'Відсутні обов\'язкові розміри: 192x192 або 512x512', 'warning');
+        }
+      } else {
+        addCheck('Іконки PWA', 'Іконки не налаштовані в manifest', 'error');
+      }
+
+      // 5. Перевірка встановлення
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        addCheck('Режим встановлення', 'Додаток запущено як встановлена PWA', 'success');
+      } else {
+        addCheck('Режим встановлення', 'Додаток відкрито в браузері (не встановлено)', 'warning');
+      }
+
+      // 6. Перевірка BeforeInstallPrompt
+      let installPromptAvailable = false;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        installPromptAvailable = true;
+      });
+      
+      setTimeout(() => {
+        if (installPromptAvailable) {
+          addCheck('Можливість встановлення', 'Браузер дозволяє встановити додаток', 'success');
+        } else {
+          addCheck('Можливість встановлення', 'Подія beforeinstallprompt не виявлена (можливо вже встановлено або браузер не підтримує)', 'warning');
+        }
+      }, 1000);
+
+      // 7. Перевірка Geolocation API
+      if ('geolocation' in navigator) {
+        addCheck('Geolocation API', 'Підтримується браузером', 'success');
+      } else {
+        addCheck('Geolocation API', 'Не підтримується', 'error');
+      }
+
+      // 8. Перевірка Online/Offline
+      if (navigator.onLine) {
+        addCheck('Мережа', 'Онлайн режим', 'success');
+      } else {
+        addCheck('Мережа', 'Офлайн режим', 'warning');
+      }
+    }
+
+    runChecks();
+  </script>
+</body>
+</html>
+

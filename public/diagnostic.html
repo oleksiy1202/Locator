@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Діагностика PWA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 { margin-top: 0; }
+        .test-section {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .success {
+            background: #4caf50;
+            color: white;
+        }
+        .error {
+            background: #f44336;
+            color: white;
+        }
+        .warning {
+            background: #ff9800;
+            color: white;
+        }
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .icon-preview {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            margin: 5px;
+            border: 2px solid white;
+        }
+        .link {
+            color: #ffeb3b;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Діагностика PWA - Location Test</h1>
+        <p>Ця сторінка допоможе знайти проблеми з вашим додатком</p>
+        
+        <div class="test-section">
+            <h2>1️⃣ Service Worker</h2>
+            <div id="sw-status">Перевіряю...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>2️⃣ Manifest</h2>
+            <div id="manifest-status">Перевіряю...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>3️⃣ Іконки</h2>
+            <div id="icons-status">Перевіряю...</div>
+            <div id="icons-preview"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4️⃣ HTTPS/Localhost</h2>
+            <div id="https-status">Перевіряю...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>5️⃣ Можливість встановлення</h2>
+            <div id="install-status">Перевіряю...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>6️⃣ Browser Support</h2>
+            <div id="browser-status">Перевіряю...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>🛠️ Дії</h2>
+            <button onclick="testAll()">🔄 Перевірити все знову</button>
+            <button onclick="unregisterSW()">❌ Видалити Service Worker</button>
+            <button onclick="clearCache()">🗑️ Очистити кеш</button>
+            <button onclick="window.location.href='/'">🏠 На головну</button>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Детальна інформація</h2>
+            <pre id="details"></pre>
+        </div>
+
+        <div class="test-section">
+            <h2>💡 Швидке виправлення</h2>
+            <div id="quick-fix"></div>
+        </div>
+    </div>
+
+    <script>
+        const log = [];
+        
+        function addLog(message) {
+            log.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+            document.getElementById('details').textContent = log.join('\n');
+        }
+
+        async function testServiceWorker() {
+            const statusEl = document.getElementById('sw-status');
+            
+            if (!('serviceWorker' in navigator)) {
+                statusEl.innerHTML = '<span class="status error">❌ НЕ ПІДТРИМУЄТЬСЯ</span>';
+                addLog('ERROR: Service Worker не підтримується браузером');
+                return false;
+            }
+
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length > 0) {
+                    statusEl.innerHTML = `<span class="status success">✅ ЗАРЕЄСТРОВАНО</span> (${registrations.length})`;
+                    addLog(`SUCCESS: Service Worker зареєстровано: ${registrations.length} шт.`);
+                    registrations.forEach((reg, i) => {
+                        addLog(`  - SW #${i+1}: ${reg.active ? 'Активний' : 'Неактивний'}`);
+                    });
+                    return true;
+                } else {
+                    statusEl.innerHTML = '<span class="status error">❌ НЕ ЗАРЕЄСТРОВАНО</span>';
+                    addLog('ERROR: Service Worker не зареєстровано');
+                    return false;
+                }
+            } catch (error) {
+                statusEl.innerHTML = '<span class="status error">❌ ПОМИЛКА</span>';
+                addLog(`ERROR: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function testManifest() {
+            const statusEl = document.getElementById('manifest-status');
+            
+            const manifestLink = document.querySelector('link[rel="manifest"]');
+            if (!manifestLink) {
+                statusEl.innerHTML = '<span class="status error">❌ ВІДСУТНІЙ</span>';
+                addLog('ERROR: Manifest link не знайдено в HTML');
+                return false;
+            }
+
+            try {
+                const response = await fetch('/manifest.json');
+                if (response.ok) {
+                    const manifest = await response.json();
+                    statusEl.innerHTML = `<span class="status success">✅ ЗНАЙДЕНО</span><br>Назва: ${manifest.name}`;
+                    addLog(`SUCCESS: Manifest завантажено: ${manifest.name}`);
+                    addLog(`  - Short name: ${manifest.short_name}`);
+                    addLog(`  - Icons: ${manifest.icons?.length || 0}`);
+                    return true;
+                } else {
+                    statusEl.innerHTML = '<span class="status error">❌ НЕ ЗАВАНТАЖУЄТЬСЯ</span>';
+                    addLog(`ERROR: Manifest не завантажується (${response.status})`);
+                    return false;
+                }
+            } catch (error) {
+                statusEl.innerHTML = '<span class="status error">❌ ПОМИЛКА</span>';
+                addLog(`ERROR: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function testIcons() {
+            const statusEl = document.getElementById('icons-status');
+            const previewEl = document.getElementById('icons-preview');
+            
+            const icons = [
+                { url: '/icon-192.png', size: '192x192' },
+                { url: '/icon-512.png', size: '512x512' }
+            ];
+
+            let allOk = true;
+            let html = '<br>';
+
+            for (const icon of icons) {
+                try {
+                    const response = await fetch(icon.url);
+                    if (response.ok) {
+                        html += `<img src="${icon.url}" class="icon-preview" title="${icon.size}">`;
+                        addLog(`SUCCESS: Іконка ${icon.size} знайдена`);
+                    } else {
+                        html += `<span class="status error">❌ ${icon.size}</span>`;
+                        addLog(`ERROR: Іконка ${icon.size} не знайдена (${response.status})`);
+                        allOk = false;
+                    }
+                } catch (error) {
+                    html += `<span class="status error">❌ ${icon.size}</span>`;
+                    addLog(`ERROR: Іконка ${icon.size} - ${error.message}`);
+                    allOk = false;
+                }
+            }
+
+            previewEl.innerHTML = html;
+            if (allOk) {
+                statusEl.innerHTML = '<span class="status success">✅ ВСІ ЗНАЙДЕНО</span>';
+            } else {
+                statusEl.innerHTML = '<span class="status error">❌ ВІДСУТНІ</span>';
+            }
+
+            return allOk;
+        }
+
+        function testHTTPS() {
+            const statusEl = document.getElementById('https-status');
+            const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            
+            if (isSecure) {
+                statusEl.innerHTML = `<span class="status success">✅ OK</span><br>${location.protocol}//${location.host}`;
+                addLog(`SUCCESS: Безпечне з'єднання: ${location.protocol}`);
+            } else {
+                statusEl.innerHTML = '<span class="status error">❌ НЕ БЕЗПЕЧНО</span><br>PWA працює тільки на HTTPS або localhost!';
+                addLog(`ERROR: Небезпечне з'єднання: ${location.protocol}`);
+            }
+
+            return isSecure;
+        }
+
+        function testInstallability() {
+            const statusEl = document.getElementById('install-status');
+            
+            // Перевірка чи додаток в standalone mode
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                statusEl.innerHTML = '<span class="status success">✅ ВЖЕ ВСТАНОВЛЕНО</span>';
+                addLog('INFO: Додаток вже встановлено і запущено в standalone mode');
+                return true;
+            }
+
+            statusEl.innerHTML = '<span class="status warning">⚠️ НЕ ВСТАНОВЛЕНО</span><br>Спробуйте встановити через меню браузера або банер';
+            addLog('INFO: Додаток не встановлено');
+            return false;
+        }
+
+        function testBrowser() {
+            const statusEl = document.getElementById('browser-status');
+            const ua = navigator.userAgent;
+            let browser = 'Невідомий';
+            let supported = true;
+
+            if (ua.includes('Chrome')) browser = 'Chrome ✅';
+            else if (ua.includes('Firefox')) {
+                browser = 'Firefox ⚠️ (обмежена підтримка PWA)';
+                supported = false;
+            }
+            else if (ua.includes('Safari') && !ua.includes('Chrome')) {
+                browser = 'Safari ⚠️ (обмежена підтримка PWA)';
+                supported = false;
+            }
+            else if (ua.includes('Edge')) browser = 'Edge ✅';
+
+            const status = supported ? 'success' : 'warning';
+            statusEl.innerHTML = `<span class="status ${status}">${browser}</span>`;
+            addLog(`INFO: Браузер: ${browser}`);
+
+            return supported;
+        }
+
+        async function testAll() {
+            log.length = 0;
+            addLog('=== ПОЧАТОК ДІАГНОСТИКИ ===');
+            
+            const results = {
+                sw: await testServiceWorker(),
+                manifest: await testManifest(),
+                icons: await testIcons(),
+                https: testHTTPS(),
+                installed: testInstallability(),
+                browser: testBrowser()
+            };
+
+            // Генерація рекомендацій
+            const fixEl = document.getElementById('quick-fix');
+            let fixes = [];
+
+            if (!results.sw) {
+                fixes.push('📌 Service Worker не зареєстровано. Перезавантажте сторінку або перевірте консоль браузера (F12).');
+            }
+            if (!results.manifest) {
+                fixes.push('📌 Manifest не знайдено. Перевірте чи файл manifest.json існує в папці public/');
+            }
+            if (!results.icons) {
+                fixes.push('📌 Іконки відсутні. Створіть іконки через <a href="/create-icons.html" class="link">Генератор іконок</a>');
+            }
+            if (!results.https) {
+                fixes.push('📌 Використовуйте HTTPS або localhost для PWA.');
+            }
+            if (!results.browser) {
+                fixes.push('📌 Використовуйте Chrome або Edge для найкращої підтримки PWA.');
+            }
+
+            if (fixes.length === 0) {
+                fixEl.innerHTML = '<span class="status success">✅ ВСЕ ПРАЦЮЄ ПРАВИЛЬНО!</span><br>Спробуйте встановити додаток через меню браузера або дочекайтеся банеру на головній сторінці.';
+            } else {
+                fixEl.innerHTML = fixes.map(f => `<div style="margin: 10px 0;">${f}</div>`).join('');
+            }
+
+            addLog('=== КІНЕЦЬ ДІАГНОСТИКИ ===');
+        }
+
+        async function unregisterSW() {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const reg of registrations) {
+                await reg.unregister();
+            }
+            alert('Service Worker видалено! Перезавантажте сторінку.');
+            addLog('INFO: Service Worker видалено');
+        }
+
+        async function clearCache() {
+            if ('caches' in window) {
+                const names = await caches.keys();
+                await Promise.all(names.map(name => caches.delete(name)));
+                alert('Кеш очищено! Перезавантажте сторінку.');
+                addLog('INFO: Кеш очищено');
+            }
+        }
+
+        // Автозапуск
+        window.onload = testAll;
+    </script>
+</body>
+</html>
+

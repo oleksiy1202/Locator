@@ -1,69 +1,259 @@
-# React + TypeScript + Vite
+# 📍 Location Test - Додаток для відстеження локації
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Сучасний PWA додаток для відстеження вашого місцезнаходження в реальному часі з підтримкою офлайн режиму, темної теми та детальною статистикою.
 
-Currently, two official plugins are available:
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![React](https://img.shields.io/badge/React-19.1.0-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6?logo=typescript)
+![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?logo=pwa)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## ✨ Основні функції
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 🗺️ **Карти та Геолокація**
+- ✅ Відображення вашого місцезнаходження на карті в реальному часі
+- ✅ Визначення точності GPS з візуальним колом
+- ✅ Зворотне геокодування (отримання адреси з координат)
+- ✅ Інтерактивна карта на базі OpenStreetMap
+- ✅ Автоматичне центровання карти
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 💾 **Історія та Збереження**
+- ✅ Автоматичне збереження історії локацій у LocalStorage
+- ✅ Налаштовувана кількість точок (5-100)
+- ✅ Експорт даних у JSON та CSV форматах
+- ✅ Очищення історії одним кліком
+- ✅ Збереження між сесіями
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### 📊 **Статистика**
+- ✅ Загальна пройдена відстань
+- ✅ Середня точність GPS
+- ✅ Найкраща та найгірша точність
+- ✅ Кількість збережених точок
+- ✅ Час останнього оновлення
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### ⚙️ **Налаштування**
+- ✅ Автооновлення локації (з інтервалами 5с - 5хв)
+- ✅ Вибір кількості точок історії
+- ✅ Перемикання одиниць виміру (метрична/англійська)
+- ✅ Показ/приховування кола точності
+- ✅ Скидання до налаштувань за замовчуванням
+
+### 🌙 **Теми**
+- ✅ Світла та темна теми
+- ✅ Автоматичне визначення системних налаштувань
+- ✅ Збереження вибору в LocalStorage
+- ✅ Плавні переходи між темами
+
+### 📱 **PWA (Progressive Web App)**
+- ✅ Встановлення як нативний додаток
+- ✅ Офлайн підтримка
+- ✅ Service Worker для кешування
+- ✅ Працює без браузера після встановлення
+
+### 📤 **Поділитися**
+- ✅ Швидке поділитися поточною локацією
+- ✅ Web Share API
+- ✅ Копіювання посилання Google Maps
+
+### ℹ️ **Системна інформація**
+- ✅ Тип пристрою (ПК/мобільний/планшет)
+- ✅ Операційна система
+- ✅ Браузер
+- ✅ Статус мережі
+- ✅ Рівень заряду батареї
+- ✅ Роздільна здатність екрану
+
+---
+
+## 🚀 Запуск проєкту
+
+### Вимоги
+- Node.js 16+ 
+- npm або yarn
+
+### Встановлення
+
+```bash
+# Клонувати репозиторій або перейти в папку
+cd location-app
+
+# Встановити залежності
+npm install
+
+# Запустити в режимі розробки
+npm run dev
+
+# Збудувати для продакшену
+npm run build
+
+# Перевірити збірку локально
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Створення іконок для PWA
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Відкрийте в браузері: `http://localhost:5173/create-icons.html`
+2. Завантажте згенеровані іконки (192x192 та 512x512)
+3. Збережіть як `icon-192.png` та `icon-512.png` у папку `public/`
+4. Перезапустіть сервер
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 📦 Технології
+
+- **Frontend:**
+  - React 19.1.0
+  - TypeScript 5.8.3
+  - Vite 7.0.4
+
+- **UI/UX:**
+  - Framer Motion 12.23.10 (анімації)
+  - CSS3 (стилізація)
+  - Responsive Design
+
+- **Карти:**
+  - Leaflet 1.9.4
+  - React Leaflet 5.0.0
+  - OpenStreetMap
+
+- **PWA:**
+  - Service Worker
+  - Web App Manifest
+  - Cache API
+
+- **API:**
+  - Geolocation API
+  - Nominatim (геокодування)
+  - Web Share API
+  - Battery API
+  - Network Information API
+
+---
+
+## 📂 Структура проєкту
+
 ```
+location-app/
+├── public/
+│   ├── manifest.json          # PWA manifest
+│   ├── sw.js                  # Service Worker
+│   ├── create-icons.html      # Генератор іконок
+│   └── icon.svg               # SVG іконка
+├── src/
+│   ├── components/
+│   │   ├── InstallPWA/        # Компонент встановлення PWA
+│   │   ├── Settings/          # Панель налаштувань
+│   │   ├── Statistics/        # Статистика
+│   │   └── ThemeToggle/       # Перемикач теми
+│   ├── assets/
+│   │   └── components/
+│   │       ├── MapView/       # Карта та історія
+│   │       └── SystemInfo/    # Системна інформація
+│   ├── context/
+│   │   ├── ThemeContext.tsx   # Контекст теми
+│   │   └── SettingsContext.tsx# Контекст налаштувань
+│   ├── utils/
+│   │   ├── pwa.ts            # PWA утиліти
+│   │   └── storage.ts        # LocalStorage утиліти
+│   ├── App.tsx               # Головний компонент
+│   ├── main.tsx              # Точка входу
+│   └── index.css             # Глобальні стилі
+├── package.json
+├── vite.config.ts
+└── tsconfig.json
+```
+
+---
+
+## 🎨 Особливості
+
+### Адаптивний дизайн
+Додаток повністю адаптивний і працює на всіх пристроях:
+- 📱 Мобільні телефони
+- 💻 Планшети
+- 🖥️ Десктопи
+
+### Офлайн підтримка
+Додаток працює навіть без інтернету завдяки Service Worker:
+- Статичні файли кешуються
+- Карти зберігаються локально
+- Історія доступна завжди
+
+### Безпека
+- HTTPS підтримка
+- Безпечне зберігання даних
+- Приватність користувача
+
+---
+
+## 📊 Розмір збірки
+
+- **HTML:** 1.19 KB (gzip: 0.67 KB)
+- **CSS:** 31.87 KB (gzip: 9.80 KB)
+- **JS:** 479.14 KB (gzip: 149.52 KB)
+- **Загалом:** ~512 KB (gzip: ~160 KB)
+
+---
+
+## 🛠️ Доступні команди
+
+```bash
+# Розробка
+npm run dev          # Запустити dev сервер
+
+# Збірка
+npm run build        # Збудувати для продакшену
+npm run preview      # Переглянути збірку
+
+# Якість коду
+npm run lint         # Перевірити код ESLint
+```
+
+---
+
+## 🌐 Браузери
+
+Підтримуються всі сучасні браузери:
+- ✅ Chrome/Edge 90+
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ Opera 76+
+
+---
+
+## 📝 Ліцензія
+
+MIT License - використовуйте вільно!
+
+---
+
+## 👨‍💻 Автор
+
+Створено з ❤️ за допомогою React, TypeScript та Vite
+
+---
+
+## 🎯 Майбутні покращення
+
+- [ ] Треки переміщення на карті
+- [ ] Улюблені місця
+- [ ] Пошук та фільтри історії
+- [ ] Push-сповіщення
+- [ ] Графіки та діаграми
+- [ ] Мультимовна підтримка
+- [ ] Синхронізація між пристроями
+
+---
+
+## 🆘 Підтримка
+
+Якщо виникли питання або проблеми:
+1. Перевірте консоль браузера (F12)
+2. Очистіть кеш та LocalStorage
+3. Перезапустіть Service Worker
+4. Перезавантажте сторінку
+
+---
+
+**Дякуємо за використання Location Test! 🎉**

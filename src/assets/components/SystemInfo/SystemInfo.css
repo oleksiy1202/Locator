@@ -1,8 +1,6 @@
 .system-info {
-    background-color: #f9f9f9;
     border-radius: 16px;
     padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     margin-bottom: 24px;
     font-family: 'Segoe UI', sans-serif;
     max-width: 600px;
@@ -11,10 +9,28 @@
     transition: all 0.3s ease-in-out;
 }
 
+body.light .system-info {
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body.dark .system-info {
+    background-color: #2d2d44;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
 .system-info h3 {
     font-size: 1.4rem;
     margin-bottom: 16px;
+    transition: color 0.3s ease;
+}
+
+body.light .system-info h3 {
     color: #333;
+}
+
+body.dark .system-info h3 {
+    color: #ffffff;
 }
 
 .system-info ul {
@@ -25,9 +41,18 @@
 
 .system-info li {
     padding: 8px 0;
-    border-bottom: 1px solid #e2e2e2;
     font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+body.light .system-info li {
+    border-bottom: 1px solid #e2e2e2;
     color: #444;
+}
+
+body.dark .system-info li {
+    border-bottom: 1px solid #3d3d5c;
+    color: #d0d0d0;
 }
 
 .system-info li:last-child {
@@ -35,7 +60,15 @@
 }
 
 .system-info strong {
+    transition: color 0.3s ease;
+}
+
+body.light .system-info strong {
     color: #222;
+}
+
+body.dark .system-info strong {
+    color: #00d4ff;
 }
 
 @media (max-width: 480px) {

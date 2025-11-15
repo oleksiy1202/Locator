@@ -2,9 +2,16 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import './MapView.css';
+import { useSettings } from '../../../context/SettingsContext';
+import { saveHistory, loadHistory, clearHistory, exportToJSON, exportToCSV, shareLocation } from '../../../utils/storage';
+import Statistics from '../../../components/Statistics/Statistics';
 
 // 🔧 Виправлення іконки маркера Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+interface IconDefault extends L.Icon.Default {
+    _getIconUrl?: string;
+}
+delete (L.Icon.Default.prototype as IconDefault)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -16,6 +23,7 @@ interface LocationData {
     accuracy: number;
     address: string | null;
     timestamp: string;
+    fullDate: string;
 }
 
 // 🗺 Хук для плавного центровання карти
@@ -23,19 +31,41 @@ const RecenterMap: React.FC<{ lat: number; lng: number }> = ({ lat, lng }) => {
     const map = useMap();
     useEffect(() => {
         map.setView([lat, lng], map.getZoom());
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [lat, lng]);
     return null;
 };
 
 const MapView: React.FC = () => {
+    const { settings } = useSettings();
     const [position, setPosition] = useState<[number, number] | null>(null);
     const [accuracy, setAccuracy] = useState<number | null>(null);
     const [address, setAddress] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [history, setHistory] = useState<LocationData[]>([]);
+    const [history, setHistory] = useState<LocationData[]>(() => loadHistory());
     const [loadingAddress, setLoadingAddress] = useState(false);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Зберігати історію в localStorage при змінах
+    useEffect(() => {
+        saveHistory(history);
+    }, [history]);
+
+    // Функція конвертації відстані
+    const formatDistance = useCallback((meters: number): string => {
+        if (settings.units === 'imperial') {
+            const feet = meters * 3.28084;
+            if (feet > 5280) {
+                return `${(feet / 5280).toFixed(2)} mi`;
+            }
+            return `${feet.toFixed(0)} ft`;
+        }
+        if (meters > 1000) {
+            return `${(meters / 1000).toFixed(2)} км`;
+        }
+        return `${meters.toFixed(0)} м`;
+    }, [settings.units]);
 
     // 📦 Зворотне геокодування
     const reverseGeocode = async (lat: number, lon: number): Promise<string | null> => {
@@ -72,16 +102,23 @@ const MapView: React.FC = () => {
                 setAddress(addr);
                 setLoadingAddress(false);
 
-                const timestamp = new Date().toLocaleTimeString();
+                const now = new Date();
+                const timestamp = now.toLocaleTimeString();
+                const fullDate = now.toLocaleDateString('uk-UA', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
 
                 const newEntry: LocationData = {
                     coords,
                     accuracy,
                     address: addr,
                     timestamp,
+                    fullDate,
                 };
 
-                setHistory((prev) => [newEntry, ...prev.slice(0, 9)]); // Зберігати лише 10 останніх
+                setHistory((prev) => [newEntry, ...prev.slice(0, settings.historyLimit - 1)]); // Зберігати згідно налаштувань
             },
             (err) => {
                 setError('Не вдалося отримати локацію: ' + err.message);
@@ -92,34 +129,66 @@ const MapView: React.FC = () => {
                 maximumAge: 5000,
             }
         );
-    }, []);
+    }, [settings.historyLimit]);
 
-    // 🔁 Автооновлення кожні 10 секунд
+    // 🔁 Автооновлення згідно налаштувань
     useEffect(() => {
         updateLocation(); // Перше оновлення
 
-        // intervalRef.current = setInterval(() => {
-        //     updateLocation();
-        // }, 10000);
+        // Очистка попереднього інтервалу
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+
+        // Встановлення нового інтервалу, якщо автооновлення увімкнено
+        if (settings.autoUpdate) {
+            intervalRef.current = setInterval(() => {
+                updateLocation();
+            }, settings.updateInterval * 1000);
+        }
 
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    }, [updateLocation]);
+    }, [updateLocation, settings.autoUpdate, settings.updateInterval]);
+
+    // Обробники кнопок
+    const handleClearHistory = () => {
+        if (window.confirm('Ви впевнені, що хочете очистити всю історію?')) {
+            setHistory([]);
+            clearHistory();
+        }
+    };
+
+    const handleShare = () => {
+        if (position && address) {
+            shareLocation(position, address);
+        } else if (position) {
+            shareLocation(position, null);
+        }
+    };
 
     return (
-        <div style={{ marginTop: '20px' }}>
-            <div style={{ textAlign: 'center' }}>
+        <div className="map-container">
+            <div className="map-header">
                 <h2>Карта місцезнаходження</h2>
 
-                <button onClick={updateLocation} style={{ marginBottom: '10px' }}>
-                    🔄 Оновити локацію вручну
-                </button>
+                <div className="button-group">
+                    <button onClick={updateLocation} className="refresh-button">
+                        🔄 Оновити локацію
+                    </button>
+                    {position && (
+                        <button onClick={handleShare} className="share-button">
+                            📤 Поділитися
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {error && <p className="error-message">{error}</p>}
 
-            <div style={{ height: '400px', width: '100%', marginBottom: '20px' }}>
+            <div className="map-wrapper">
                 {position ? (
                     <MapContainer center={position} zoom={15} style={{ height: '100%', width: '100%' }}>
                         <TileLayer
@@ -129,7 +198,7 @@ const MapView: React.FC = () => {
                         <Marker position={position}>
                             <Popup>
                                 Ви тут 📍<br />
-                                Точність: {accuracy?.toFixed(0)} м<br />
+                                Точність: {accuracy && formatDistance(accuracy)}<br />
                                 {loadingAddress ? (
                                     <em>Завантаження адреси...</em>
                                 ) : (
@@ -142,28 +211,61 @@ const MapView: React.FC = () => {
                                 )}
                             </Popup>
                         </Marker>
-                        {accuracy && <Circle center={position} radius={accuracy} pathOptions={{ color: 'blue', fillOpacity: 0.2 }} />}
+                        {accuracy && settings.showAccuracyCircle && (
+                            <Circle center={position} radius={accuracy} pathOptions={{ color: 'blue', fillOpacity: 0.2 }} />
+                        )}
                         <RecenterMap lat={position[0]} lng={position[1]} />
                     </MapContainer>
                 ) : (
-                    <p>Завантаження мапи...</p>
+                    <p className="map-loading">Завантаження мапи...</p>
                 )}
             </div>
 
-            <h3>📍 Історія останніх локацій:</h3>
-            {history.length > 0 ? (
-                <ul style={{ paddingLeft: '20px' }}>
-                    {history.map((item, index) => (
-                        <li key={index} style={{ marginBottom: '10px' }}>
-                            <strong>{item.timestamp}</strong> — {item.coords[0].toFixed(5)}, {item.coords[1].toFixed(5)}<br />
-                            {item.address && <em>{item.address}</em>}<br />
-                            Точність: {item.accuracy.toFixed(0)} м
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>Ще немає збережених точок.</p>
+            {/* Статистика */}
+            {history.length > 0 && (
+                <Statistics history={history} units={settings.units} />
             )}
+
+            <div className="history-section">
+                <div className="history-header">
+                    <h3>📍 Історія локацій ({history.length})</h3>
+                    {history.length > 0 && (
+                        <div className="history-actions">
+                            <button onClick={() => exportToJSON(history)} className="export-button">
+                                💾 JSON
+                            </button>
+                            <button onClick={() => exportToCSV(history)} className="export-button">
+                                📊 CSV
+                            </button>
+                            <button onClick={handleClearHistory} className="clear-button">
+                                🗑️ Очистити
+                            </button>
+                        </div>
+                    )}
+                </div>
+                
+                {history.length > 0 ? (
+                    <ul className="history-list">
+                        {history.map((item, index) => (
+                            <li key={index} className="history-item">
+                                <div className="history-item-time">
+                                    <strong>{item.timestamp}</strong>
+                                    {item.fullDate && <span className="history-date">{item.fullDate}</span>}
+                                </div>
+                                <div className="history-item-coords">
+                                    📌 {item.coords[0].toFixed(5)}, {item.coords[1].toFixed(5)}
+                                </div>
+                                {item.address && <div className="history-item-address">{item.address}</div>}
+                                <div className="history-item-accuracy">
+                                    🎯 Точність: {formatDistance(item.accuracy)}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="no-history">Ще немає збережених точок.</p>
+                )}
+            </div>
         </div>
     );
 };

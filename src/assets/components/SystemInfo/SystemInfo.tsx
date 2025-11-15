@@ -44,12 +44,23 @@ const SystemInfo: React.FC = () => {
         setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 
         // Тип мережі
-        const connection = (navigator as any).connection;
+        interface NavigatorConnection extends Navigator {
+            connection?: {
+                effectiveType?: string;
+            };
+        }
+        const connection = (navigator as NavigatorConnection).connection;
         if (connection?.effectiveType) setConnectionType(connection.effectiveType);
 
         // Батарея
+        interface NavigatorBattery extends Navigator {
+            getBattery?: () => Promise<{
+                level: number;
+                charging: boolean;
+            }>;
+        }
         if ('getBattery' in navigator) {
-            (navigator as any).getBattery().then((bat: any) => {
+            (navigator as NavigatorBattery).getBattery?.().then((bat) => {
                 setBattery({ level: bat.level, charging: bat.charging });
             });
         }

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генерація іконок PWA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+        }
+        .icon-preview {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Генератор іконок PWA</h1>
+        
+        <div class="info">
+            <strong>Інструкція:</strong>
+            <ol>
+                <li>Натисніть кнопки нижче для генерації іконок</li>
+                <li>Збережіть згенеровані файли як <code>icon-192.png</code> та <code>icon-512.png</code></li>
+                <li>Помістіть їх у папку <code>public/</code></li>
+            </ol>
+        </div>
+        
+        <div class="icon-preview">
+            <div>
+                <h3>192x192</h3>
+                <canvas id="icon192" width="192" height="192"></canvas>
+                <br>
+                <button onclick="downloadIcon(192)">⬇️ Завантажити 192x192</button>
+            </div>
+            <div>
+                <h3>512x512</h3>
+                <canvas id="icon512" width="512" height="512"></canvas>
+                <br>
+                <button onclick="downloadIcon(512)">⬇️ Завантажити 512x512</button>
+            </div>
+        </div>
+        
+        <button onclick="generateIcons()">🎨 Генерувати іконки</button>
+    </div>
+
+    <script>
+        function drawIcon(canvas) {
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            // Draw rounded rectangle background
+            const radius = size / 5;
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw pin icon
+            ctx.fillStyle = 'white';
+            const centerX = size / 2;
+            const pinTop = size * 0.25;
+            const pinHeight = size * 0.3;
+            const pinWidth = size * 0.25;
+            
+            // Pin head (circle)
+            ctx.beginPath();
+            ctx.arc(centerX, pinTop + pinHeight / 2, pinWidth / 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pin inner circle
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(centerX, pinTop + pinHeight / 2, pinWidth / 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pin bottom
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            ctx.moveTo(centerX - pinWidth / 3, pinTop + pinHeight);
+            ctx.lineTo(centerX, size * 0.75);
+            ctx.lineTo(centerX + pinWidth / 3, pinTop + pinHeight);
+            ctx.quadraticCurveTo(centerX, pinTop + pinHeight + pinWidth / 4, centerX - pinWidth / 3, pinTop + pinHeight);
+            ctx.fill();
+            
+            // Location text
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size / 10}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('📍', centerX, size * 0.9);
+        }
+        
+        function generateIcons() {
+            drawIcon(document.getElementById('icon192'));
+            drawIcon(document.getElementById('icon512'));
+        }
+        
+        function downloadIcon(size) {
+            const canvas = document.getElementById('icon' + size);
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Generate on load
+        window.onload = generateIcons;
+    </script>
+</body>
+</html>
+

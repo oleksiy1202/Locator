@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173, // порт за замовчуванням (можеш змінити)
-    open: `chome`, // автоматично відкриває браузер
+    open: true, // автоматично відкриває браузер
   },
   build: {
     outDir: 'dist', // папка для збірки

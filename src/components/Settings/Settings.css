@@ -1,0 +1,379 @@
+/* === TRIGGER BUTTON === */
+.settings-trigger {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+body.light .settings-trigger {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+body.dark .settings-trigger {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.settings-trigger:hover {
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.settings-trigger:active {
+    transform: scale(0.95);
+}
+
+/* === BACKDROP === */
+.settings-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+}
+
+/* === PANEL === */
+.settings-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+body.light .settings-panel {
+    background: #ffffff;
+}
+
+body.dark .settings-panel {
+    background: #1a1a2e;
+}
+
+/* === HEADER === */
+.settings-header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid;
+}
+
+body.light .settings-header {
+    border-color: #e0e0e0;
+    background: #f9f9f9;
+}
+
+body.dark .settings-header {
+    border-color: #3d3d5c;
+    background: #2d2d44;
+}
+
+.settings-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+body.light .settings-header h2 {
+    color: #0d1b2a;
+}
+
+body.dark .settings-header h2 {
+    color: #ffffff;
+}
+
+.close-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+body.light .close-button {
+    background: #e0e0e0;
+    color: #333;
+}
+
+body.dark .close-button {
+    background: #3d3d5c;
+    color: #ffffff;
+}
+
+.close-button:hover {
+    transform: scale(1.1);
+}
+
+body.light .close-button:hover {
+    background: #d0d0d0;
+}
+
+body.dark .close-button:hover {
+    background: #4d4d6c;
+}
+
+/* === CONTENT === */
+.settings-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* === SETTING ITEM === */
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid;
+}
+
+body.light .setting-item {
+    border-color: #e0e0e0;
+}
+
+body.dark .setting-item {
+    border-color: #3d3d5c;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-label {
+    flex: 1;
+    margin-right: 15px;
+}
+
+.setting-label span {
+    font-size: 1rem;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 5px;
+}
+
+body.light .setting-label span {
+    color: #0d1b2a;
+}
+
+body.dark .setting-label span {
+    color: #ffffff;
+}
+
+.setting-description {
+    font-size: 0.85rem;
+    margin: 0;
+    opacity: 0.7;
+}
+
+body.light .setting-description {
+    color: #666;
+}
+
+body.dark .setting-description {
+    color: #999;
+}
+
+/* === TOGGLE SWITCH === */
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+    display: inline-block;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #007bff;
+}
+
+body.dark .toggle-switch input:checked + .toggle-slider {
+    background-color: #00d4ff;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.toggle-switch input:disabled + .toggle-slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* === SELECT === */
+.setting-select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 140px;
+}
+
+body.light .setting-select {
+    background: #ffffff;
+    color: #333;
+    border-color: #ccc;
+}
+
+body.dark .setting-select {
+    background: #2d2d44;
+    color: #ffffff;
+    border-color: #3d3d5c;
+}
+
+.setting-select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+body.dark .setting-select:focus {
+    border-color: #00d4ff;
+}
+
+.setting-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+body.light .setting-select:disabled {
+    background: #f0f0f0;
+}
+
+body.dark .setting-select:disabled {
+    background: #1a1a2e;
+}
+
+/* === ACTIONS === */
+.settings-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid;
+}
+
+body.light .settings-actions {
+    border-color: #e0e0e0;
+}
+
+body.dark .settings-actions {
+    border-color: #3d3d5c;
+}
+
+.reset-button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body.light .reset-button {
+    background: #f44336;
+    color: white;
+}
+
+body.dark .reset-button {
+    background: #d32f2f;
+    color: white;
+}
+
+.reset-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
+body.dark .reset-button:hover {
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+}
+
+.reset-button:active {
+    transform: translateY(0);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 600px) {
+    .settings-panel {
+        max-width: 100%;
+    }
+
+    .settings-trigger {
+        top: 70px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+    }
+
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .setting-label {
+        margin-right: 0;
+    }
+
+    .setting-select {
+        width: 100%;
+    }
+}
+

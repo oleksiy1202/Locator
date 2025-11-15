@@ -1,0 +1,148 @@
+/* === STATISTICS === */
+.statistics {
+    margin: 30px 0;
+    padding: 20px;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+body.light .statistics {
+    background: #f9f9f9;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body.dark .statistics {
+    background: #2d2d44;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.statistics h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+body.light .statistics h3 {
+    color: #0d1b2a;
+}
+
+body.dark .statistics h3 {
+    color: #ffffff;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-card {
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+body.light .stat-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+}
+
+body.dark .stat-card {
+    background: #1a1a2e;
+    border: 1px solid #3d3d5c;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+body.light .stat-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+body.dark .stat-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 212, 255, 0.2);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    transition: color 0.3s ease;
+}
+
+body.light .stat-value {
+    color: #0077ff;
+}
+
+body.dark .stat-value {
+    color: #00d4ff;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    transition: color 0.3s ease;
+}
+
+body.light .stat-label {
+    color: #666;
+}
+
+body.dark .stat-label {
+    color: #999;
+}
+
+.statistics-empty {
+    text-align: center;
+    padding: 40px 20px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+body.light .statistics-empty {
+    background: #f9f9f9;
+    color: #666;
+}
+
+body.dark .statistics-empty {
+    background: #2d2d44;
+    color: #999;
+}
+
+.statistics-empty p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 15px 10px;
+    }
+
+    .stat-icon {
+        font-size: 1.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.2rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+
