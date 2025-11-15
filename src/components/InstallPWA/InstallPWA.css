@@ -1,17 +1,23 @@
 /* === INSTALL PWA BANNER === */
 .install-pwa-banner {
+    /* Позиціонування: знизу по центру */
     position: fixed;
     bottom: 20px;
-    left: 50%;
+    /* left: 50%; */
     transform: translateX(-50%);
-    max-width: 500px;
+
+    /* Розміри */
+    max-width: 600px;
     width: calc(100% - 40px);
+
+    /* Стилізація */
     z-index: 2000;
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     padding: 16px 20px;
 }
 
+/* Теми */
 body.light .install-pwa-banner {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -22,6 +28,7 @@ body.dark .install-pwa-banner {
     color: white;
 }
 
+/* Контент */
 .install-pwa-content {
     display: flex;
     align-items: center;
@@ -51,6 +58,7 @@ body.dark .install-pwa-banner {
     line-height: 1.4;
 }
 
+/* Кнопки */
 .install-pwa-actions {
     display: flex;
     gap: 10px;
@@ -105,21 +113,32 @@ body.dark .install-pwa-button:hover {
     transform: scale(1.1);
 }
 
-/* === RESPONSIVE === */
+/* === АДАПТИВНІСТЬ === */
+
+/* Планшети */
+@media (max-width: 768px) {
+    .install-pwa-banner {
+        max-width: 500px;
+        width: calc(100% - 30px);
+    }
+}
+
+/* Телефони */
 @media (max-width: 600px) {
     .install-pwa-banner {
-        bottom: 10px;
-        width: calc(100% - 20px);
-        padding: 12px 16px;
+        bottom: 15px;
+        width: calc(100% - 24px);
+        padding: 14px 18px;
     }
 
     .install-pwa-content {
-        flex-wrap: wrap;
-        gap: 10px;
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
     }
 
     .install-pwa-icon {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
 
     .install-pwa-text strong {
@@ -127,17 +146,71 @@ body.dark .install-pwa-button:hover {
     }
 
     .install-pwa-text p {
-        font-size: 0.85rem;
+        font-size: 0.88rem;
     }
 
     .install-pwa-actions {
         width: 100%;
-        justify-content: flex-end;
+        justify-content: center;
+        gap: 12px;
     }
 
     .install-pwa-button {
-        padding: 8px 16px;
+        flex: 1;
+        padding: 10px 16px;
         font-size: 0.9rem;
     }
 }
 
+/* Дуже маленькі телефони */
+@media (max-width: 400px) {
+    .install-pwa-banner {
+        bottom: 10px;
+        width: calc(100% - 16px);
+        padding: 12px 14px;
+    }
+
+    .install-pwa-icon {
+        font-size: 2rem;
+    }
+
+    .install-pwa-text strong {
+        font-size: 0.95rem;
+    }
+
+    .install-pwa-text p {
+        font-size: 0.82rem;
+    }
+
+    .install-pwa-button {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .install-pwa-dismiss {
+        width: 30px;
+        height: 30px;
+        font-size: 1.1rem;
+    }
+}
+
+/* Великі екрани */
+@media (min-width: 1200px) {
+    .install-pwa-banner {
+        max-width: 650px;
+        padding: 18px 24px;
+    }
+
+    .install-pwa-icon {
+        font-size: 2.8rem;
+    }
+
+    .install-pwa-text strong {
+        font-size: 1.15rem;
+    }
+
+    .install-pwa-button {
+        padding: 11px 22px;
+        font-size: 1rem;
+    }
+}

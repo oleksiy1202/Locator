@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тест встановлення PWA</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .status-box {
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      border-left: 5px solid #ddd;
+      background: #f8f9fa;
+    }
+    .status-box.success {
+      border-left-color: #28a745;
+      background: #d4edda;
+    }
+    .status-box.error {
+      border-left-color: #dc3545;
+      background: #f8d7da;
+    }
+    .status-box.warning {
+      border-left-color: #ffc107;
+      background: #fff3cd;
+    }
+    .status-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-detail {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+    }
+    .install-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+      width: 100%;
+      margin-top: 20px;
+      display: none;
+    }
+    .install-btn:hover {
+      opacity: 0.9;
+    }
+    .install-btn.show {
+      display: block;
+    }
+    .info-block {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .info-block h3 {
+      color: #0066cc;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .icon {
+      font-size: 24px;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+    .steps {
+      list-style: none;
+      counter-reset: step-counter;
+    }
+    .steps li {
+      counter-increment: step-counter;
+      margin-bottom: 15px;
+      padding-left: 35px;
+      position: relative;
+    }
+    .steps li::before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: #667eea;
+      color: white;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    #deviceInfo {
+      font-size: 13px;
+      color: #666;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Тест встановлення PWA</h1>
+    <p class="subtitle">Діагностика можливості встановлення додатку</p>
+    
+    <div id="checks"></div>
+    
+    <button class="install-btn" id="installBtn">
+      📱 Встановити додаток зараз
+    </button>
+    
+    <div class="info-block" id="instructions"></div>
+    
+    <div id="deviceInfo"></div>
+  </div>
+
+  <script>
+    const checksContainer = document.getElementById('checks');
+    const installBtn = document.getElementById('installBtn');
+    const instructions = document.getElementById('instructions');
+    const deviceInfo = document.getElementById('deviceInfo');
+    
+    let deferredPrompt = null;
+    let isInstallable = false;
+
+    function addStatus(title, detail, type) {
+      const div = document.createElement('div');
+      div.className = `status-box ${type}`;
+      const icons = {
+        success: '✅',
+        warning: '⚠️',
+        error: '❌'
+      };
+      div.innerHTML = `
+        <div class="status-title">
+          <span class="icon">${icons[type]}</span>
+          ${title}
+        </div>
+        <div class="status-detail">${detail}</div>
+      `;
+      checksContainer.appendChild(div);
+    }
+
+    // Визначення пристрою
+    function getDeviceInfo() {
+      const ua = navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+      const isAndroid = /Android/.test(ua);
+      const isChrome = /Chrome/.test(ua) && !/Edg/.test(ua);
+      const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+                        || window.navigator.standalone 
+                        || document.referrer.includes('android-app://');
+      
+      return { isIOS, isAndroid, isChrome, isSafari, isStandalone };
+    }
+
+    // Перехоплення події встановлення
+    window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('beforeinstallprompt спрацювала!');
+      e.preventDefault();
+      deferredPrompt = e;
+      isInstallable = true;
+      installBtn.classList.add('show');
+      
+      addStatus(
+        'Готово до встановлення!',
+        'Браузер дозволяє встановити цей додаток. Натисніть кнопку нижче.',
+        'success'
+      );
+    });
+
+    // Встановлення через кнопку
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        alert('Промпт встановлення недоступний');
+        return;
+      }
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        addStatus('Успіх!', 'Додаток встановлюється...', 'success');
+      } else {
+        addStatus('Скасовано', 'Встановлення скасовано користувачем', 'warning');
+      }
+      
+      deferredPrompt = null;
+    });
+
+    // Перевірка встановлення
+    window.addEventListener('appinstalled', () => {
+      addStatus('Встановлено!', 'PWA успішно встановлено на пристрій', 'success');
+      installBtn.style.display = 'none';
+    });
+
+    // Основна діагностика
+    async function runDiagnostics() {
+      const device = getDeviceInfo();
+      
+      // Інфо про пристрій
+      deviceInfo.innerHTML = `
+        <strong>Пристрій:</strong> ${device.isIOS ? 'iOS' : device.isAndroid ? 'Android' : 'Інше'}<br>
+        <strong>Браузер:</strong> ${device.isChrome ? 'Chrome' : device.isSafari ? 'Safari' : 'Інший'}<br>
+        <strong>Standalone:</strong> ${device.isStandalone ? 'Так (вже встановлено)' : 'Ні'}
+      `;
+
+      // 1. Перевірка standalone режиму
+      if (device.isStandalone) {
+        addStatus(
+          'Додаток вже встановлено',
+          'Ви використовуєте PWA в standalone режимі. Кнопка встановлення не з\'явиться.',
+          'success'
+        );
+        return;
+      }
+
+      // 2. Перевірка HTTPS
+      if (location.protocol === 'https:' || location.hostname === 'localhost') {
+        addStatus('HTTPS', 'З\'єднання безпечне ✓', 'success');
+      } else {
+        addStatus('Немає HTTPS', 'PWA вимагає HTTPS. Деплойте на Netlify/Vercel.', 'error');
+        return;
+      }
+
+      // 3. Перевірка Service Worker
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration && registration.active) {
+            addStatus('Service Worker', 'Активний і працює ✓', 'success');
+          } else {
+            addStatus('Service Worker', 'Не знайдено активний SW. Перезавантажте сторінку.', 'warning');
+          }
+        } catch (e) {
+          addStatus('Service Worker', `Помилка: ${e.message}`, 'error');
+        }
+      } else {
+        addStatus('Service Worker', 'Браузер не підтримує', 'error');
+      }
+
+      // 4. Перевірка Manifest
+      try {
+        const manifestLink = document.querySelector('link[rel="manifest"]');
+        if (manifestLink) {
+          const response = await fetch(manifestLink.href);
+          const manifest = await response.json();
+          
+          if (manifest.name && manifest.icons && manifest.icons.length > 0) {
+            addStatus('Manifest', `Налаштовано правильно ✓`, 'success');
+          } else {
+            addStatus('Manifest', 'Відсутні обов\'язкові поля', 'warning');
+          }
+        } else {
+          addStatus('Manifest', 'manifest.json не знайдено', 'error');
+        }
+      } catch (e) {
+        addStatus('Manifest', `Помилка: ${e.message}`, 'error');
+      }
+
+      // 5. Спеціальні інструкції для платформ
+      setTimeout(() => {
+        if (!isInstallable) {
+          if (device.isIOS) {
+            instructions.innerHTML = `
+              <h3>📱 Інструкція для iPhone/iPad</h3>
+              <p><strong>Важливо:</strong> iOS не показує автоматичний промпт!</p>
+              <ul class="steps">
+                <li>Відкрийте сайт в <strong>Safari</strong> (не Chrome!)</li>
+                <li>Натисніть кнопку "Поділитися" <span style="font-size:20px">⎙</span></li>
+                <li>Прокрутіть вниз і виберіть <strong>"На екран Домой"</strong></li>
+                <li>Підтвердіть встановлення</li>
+              </ul>
+            `;
+            addStatus(
+              'iOS виявлено',
+              'На iPhone потрібно встановлювати вручну через Safari → Поділитися → "На екран Домой"',
+              'warning'
+            );
+          } else if (device.isAndroid && !device.isChrome) {
+            instructions.innerHTML = `
+              <h3>🤖 Інструкція для Android</h3>
+              <p>Використовуйте Chrome для кращої підтримки PWA:</p>
+              <ul class="steps">
+                <li>Відкрийте цей сайт в <strong>Chrome</strong></li>
+                <li>Чекайте появу промпту "Додати на головний екран"</li>
+                <li>АБО меню (⋮) → "Встановити додаток"</li>
+              </ul>
+            `;
+            addStatus(
+              'Використовуйте Chrome',
+              'Для кращої підтримки PWA на Android використовуйте Chrome браузер',
+              'warning'
+            );
+          } else {
+            instructions.innerHTML = `
+              <h3>⏳ Чому не з'являється кнопка?</h3>
+              <p><strong>Можливі причини:</strong></p>
+              <ul class="steps">
+                <li><strong>Браузер чекає.</strong> Залишайтеся на сайті 30-60 секунд</li>
+                <li><strong>Вже встановлено.</strong> Видаліть додаток і спробуйте знову</li>
+                <li><strong>Кеш браузера.</strong> Очистіть кеш: Налаштування → Конфіденційність → Очистити дані</li>
+                <li><strong>Старий Service Worker.</strong> Перезавантажте сторінку кілька разів (Ctrl+F5)</li>
+              </ul>
+              <p style="margin-top:15px;"><strong>Альтернатива:</strong> Меню браузера (⋮) → "Додати на головний екран"</p>
+            `;
+            addStatus(
+              'Промпт не з\'явився',
+              'Спробуйте очистити кеш, перезавантажити сторінку або встановити через меню браузера.',
+              'warning'
+            );
+          }
+        }
+      }, 2000);
+    }
+
+    // Запуск діагностики
+    runDiagnostics();
+    
+    // Періодична перевірка (кожні 5 секунд)
+    let checkCount = 0;
+    const intervalId = setInterval(() => {
+      checkCount++;
+      if (isInstallable || checkCount > 12) { // Максимум 1 хвилина
+        clearInterval(intervalId);
+      }
+    }, 5000);
+  </script>
+</body>
+</html>
+
